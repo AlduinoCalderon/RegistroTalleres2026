@@ -13,7 +13,7 @@ function App() {
             <h1 className="text-2xl font-bold tracking-tight">Registro a Talleres 2026</h1>
           </div>
         </header>
-        
+
         <main className="flex-1 container mx-auto px-4 py-8">
           <Routes>
             <Route path="/" element={<RegistrationForm />} />
@@ -24,7 +24,7 @@ function App() {
         </main>
 
         <footer className="text-center py-6 text-gray-500 text-sm">
-          &copy; 2026 Sistema de Talleres
+          Powered by Alduino Calderon with a lot of coffee &copy; 2026 Sistema de Talleres
         </footer>
       </div>
     </Router>

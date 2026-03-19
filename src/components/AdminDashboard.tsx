@@ -77,13 +77,12 @@ export default function AdminDashboard() {
       const doc = new jsPDF();
       
       // Header
-      doc.setFontSize(18);
-      doc.text('Lista de Asistencia - Talleres 2026', 14, 20);
-      
+      const fecha = taller.dia === 'Jueves' ? 'Jueves 26 de marzo de 2026' : 'Viernes 27 de marzo de 2026';
       doc.setFontSize(12);
-      doc.text(`Taller: ${taller.nombre_tematica}`, 14, 30);
-      doc.text(`Día: ${taller.dia}`, 14, 37);
-      doc.text(`Total Inscritos: ${registros.length} / ${taller.capacidad_maxima}`, 14, 44);
+      // Taller a la izquierda
+      doc.text(`Taller: ${taller.nombre_tematica}`, 14, 15);
+      // Fecha a la derecha (el ancho A4 por defecto es 210, así que usamos 196)
+      doc.text(`Fecha: ${fecha}`, 196, 15, { align: 'right' });
 
       // Table data
       const tableData = registros.map((reg) => [
@@ -100,19 +99,19 @@ export default function AdminDashboard() {
       }
 
       autoTable(doc, {
-        startY: 50,
+        startY: 20,
         head: [['N°', 'Nombre del Maestro', 'Escuela', 'CCT', 'Firma']],
         body: tableData,
         theme: 'grid',
         headStyles: { fillColor: [30, 58, 138] }, // text-blue-900 equivalent
         columnStyles: {
-          0: { cellWidth: 15, halign: 'center' },
-          1: { cellWidth: 60 },
-          2: { cellWidth: 50 },
-          3: { cellWidth: 30 },
+          0: { cellWidth: 12, halign: 'center' },
+          1: { cellWidth: 65 },
+          2: { cellWidth: 45 },
+          3: { cellWidth: 28 },
           4: { cellWidth: 35 }
         },
-        styles: { fontSize: 9, cellPadding: 3, minCellHeight: 10, valign: 'middle' }
+        styles: { fontSize: 9, cellPadding: 2, minCellHeight: 9, valign: 'middle' }
       });
 
       doc.save(`Asistencia_${taller.dia}_${taller.nombre_tematica.replace(/[^a-z0-9]/gi, '_')}.pdf`);

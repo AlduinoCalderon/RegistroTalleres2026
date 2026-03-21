@@ -8,6 +8,7 @@ import { FileText, LogOut, Loader2, Users } from 'lucide-react';
 interface Taller {
   id: string;
   nombre_tematica: string;
+  tallerista: string;
   dia: string;
   capacidad_maxima: number;
   lugares_ocupados: number;
@@ -56,7 +57,7 @@ export default function AdminDashboard() {
   const generatePDF = async (taller: Taller) => {
     setGeneratingDesc(`Generando PDF para ${taller.nombre_tematica}...`);
     try {
-      // Fetch registrations for this workshop
+      // Fetch registrations for this workshop (Phone is implicitly EXCLUDED here)
       const { data, error } = await supabase
         .from('registros')
         .select(`
@@ -78,10 +79,23 @@ export default function AdminDashboard() {
       
       // Header
       const fecha = taller.dia === 'Jueves' ? 'Jueves 26 de marzo de 2026' : 'Viernes 27 de marzo de 2026';
+      
       doc.setFontSize(12);
-      // Taller a la izquierda
-      doc.text(`Taller: ${taller.nombre_tematica}`, 14, 15);
-      // Fecha a la derecha (el ancho A4 por defecto es 210, así que usamos 196)
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Taller:`, 14, 15);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${taller.nombre_tematica}`, 28, 15);
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Imparte:`, 14, 21);
+      doc.setFont('helvetica', 'normal');
+      // Replace fallback pending with distinct color check or normal layout
+      doc.text(`${taller.tallerista}`, 32, 21);
+
+      // Fecha a la derecha
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
       doc.text(`Fecha: ${fecha}`, 196, 15, { align: 'right' });
 
       // Table data
@@ -99,7 +113,7 @@ export default function AdminDashboard() {
       }
 
       autoTable(doc, {
-        startY: 20,
+        startY: 28,
         head: [['N°', 'Nombre del Maestro', 'Escuela', 'CCT', 'Firma']],
         body: tableData,
         theme: 'grid',
@@ -158,25 +172,32 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {talleres.map(t => (
-          <div key={t.id} className="bg-white border text-gray-800 border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col h-full">
-            <div className="flex justify-between items-start mb-4">
-              <span className={`px-3 py-1 text-xs font-bold rounded-full ${t.dia === 'Jueves' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
-                {t.dia}
-              </span>
-              <span className="flex items-center text-sm text-gray-500 font-medium">
-                <Users className="w-4 h-4 mr-1" /> {t.lugares_ocupados}/{t.capacidad_maxima}
+          <div key={t.id} className="bg-white border text-gray-800 border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition-shadow p-6 flex flex-col h-full relative overflow-hidden">
+             {t.dia === 'Jueves' ? (
+                <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">JUEVES</div>
+             ) : (
+                <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">VIERNES</div>
+             )}
+            
+            <div className="flex justify-between items-start mb-4 mt-2">
+              <span className="flex items-center text-sm text-gray-700 font-bold bg-gray-100 px-3 py-1 rounded-full">
+                <Users className="w-4 h-4 mr-2 text-blue-600" /> {t.lugares_ocupados}/{t.capacidad_maxima} lugares
               </span>
             </div>
             
-            <h3 className="text-xl font-bold mb-2 flex-1">{t.nombre_tematica}</h3>
+            <h3 className="text-xl font-bold mb-1 leading-tight">{t.nombre_tematica}</h3>
+            <p className="text-sm font-medium text-gray-500 mb-4 flex-1">Imparte: {t.tallerista}</p>
 
             <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-              <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${(t.lugares_ocupados / t.capacidad_maxima) * 100}%` }}></div>
+              <div 
+                className={`h-2.5 rounded-full ${t.dia === 'Jueves' ? 'bg-blue-600' : 'bg-purple-600'}`} 
+                style={{ width: `${(t.lugares_ocupados / t.capacidad_maxima) * 100}%` }}
+              ></div>
             </div>
 
             <button
               onClick={() => generatePDF(t)}
-              className="w-full flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2.5 rounded-lg transition"
+              className={`w-full flex items-center justify-center gap-2 border font-medium py-3 rounded-xl transition ${t.dia === 'Jueves' ? 'border-blue-200 hover:bg-blue-50 text-blue-700' : 'border-purple-200 hover:bg-purple-50 text-purple-700'}`}
             >
               <FileText className="w-5 h-5" /> Descargar Lista PDF
             </button>

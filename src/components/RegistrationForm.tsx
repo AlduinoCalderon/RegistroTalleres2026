@@ -9,6 +9,7 @@ interface Taller {
   dia: 'Jueves' | 'Viernes';
   capacidad_maxima: number;
   lugares_ocupados: number;
+  requerimientos?: string;
 }
 
 export default function RegistrationForm() {
@@ -104,7 +105,14 @@ export default function RegistrationForm() {
             <CheckCircle2 className="w-24 h-24 text-green-100 drop-shadow-md" />
           </div>
           <h2 className="text-4xl font-extrabold mb-2 tracking-tight">¡Registro Exitoso!</h2>
-          <p className="text-green-50 text-lg opacity-90">Tu inscripción se ha guardado correctamente. Por favor, <strong>toma captura de pantalla</strong> de esta confirmación.</p>
+          <div className="mt-6 bg-red-600 border-4 border-yellow-300 p-4 rounded-xl shadow-2xl animate-pulse">
+            <p className="text-white text-xl md:text-2xl font-black uppercase tracking-wider text-shadow-md">
+              ¡DETERNERSE! TOMA UNA CAPTURA DE PANTALLA
+            </p>
+            <p className="text-yellow-100 mt-2 font-bold text-lg">
+              Guarda este folio en tu celular para el día del evento.
+            </p>
+          </div>
         </div>
         
         <div className="p-8">
@@ -125,6 +133,14 @@ export default function RegistrationForm() {
                 <div className="pr-4">
                   <h3 className="text-lg font-bold text-gray-800 mb-1 leading-tight">{successData.tematica_jueves}</h3>
                   <p className="text-blue-700 font-medium mb-4">Imparte: {successData.tallerista_jueves}</p>
+                  
+                  {successData.requerimientos_jueves && (
+                    <div className="bg-white/80 p-3 rounded-lg border border-blue-200 mb-4 text-sm text-gray-700">
+                      <strong className="text-blue-800 block mb-1">Requerimientos:</strong> 
+                      {successData.requerimientos_jueves}
+                    </div>
+                  )}
+
                   <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-blue-200">
                     <CalendarCheck className="w-5 h-5 text-blue-500" />
                     <span className="text-gray-600 font-medium">Folio asignado:</span>
@@ -140,6 +156,14 @@ export default function RegistrationForm() {
                 <div className="pr-4">
                   <h3 className="text-lg font-bold text-gray-800 mb-1 leading-tight">{successData.tematica_viernes}</h3>
                   <p className="text-purple-700 font-medium mb-4">Imparte: {successData.tallerista_viernes}</p>
+
+                  {successData.requerimientos_viernes && (
+                    <div className="bg-white/80 p-3 rounded-lg border border-purple-200 mb-4 text-sm text-gray-700">
+                      <strong className="text-purple-800 block mb-1">Requerimientos:</strong> 
+                      {successData.requerimientos_viernes}
+                    </div>
+                  )}
+
                   <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-purple-200">
                     <CalendarCheck className="w-5 h-5 text-purple-500" />
                     <span className="text-gray-600 font-medium">Folio asignado:</span>
@@ -257,6 +281,11 @@ export default function RegistrationForm() {
                     )
                   })}
                 </select>
+                {tallerJuevesId && talleresJueves.find(t => t.id === tallerJuevesId)?.requerimientos && (
+                  <div className="mt-3 bg-blue-100/50 p-3 rounded-lg text-sm text-blue-900 border border-blue-200">
+                    <strong>Requerimientos de material:</strong> {talleresJueves.find(t => t.id === tallerJuevesId)?.requerimientos}
+                  </div>
+                )}
               </div>
 
               <div className="bg-purple-50/50 p-5 rounded-2xl border border-purple-100 shadow-sm relative">
@@ -276,6 +305,11 @@ export default function RegistrationForm() {
                     )
                   })}
                 </select>
+                {tallerViernesId && talleresViernes.find(t => t.id === tallerViernesId)?.requerimientos && (
+                  <div className="mt-3 bg-purple-100/50 p-3 rounded-lg text-sm text-purple-900 border border-purple-200">
+                    <strong>Requerimientos de material:</strong> {talleresViernes.find(t => t.id === tallerViernesId)?.requerimientos}
+                  </div>
+                )}
               </div>
             </div>
           )}

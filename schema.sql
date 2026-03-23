@@ -5,7 +5,8 @@ CREATE TABLE public.talleres (
     nombre_tematica TEXT NOT NULL,
     dia TEXT NOT NULL CHECK (dia IN ('Jueves', 'Viernes')),
     capacidad_maxima INTEGER NOT NULL DEFAULT 25,
-    lugares_ocupados INTEGER NOT NULL DEFAULT 0
+    lugares_ocupados INTEGER NOT NULL DEFAULT 0,
+    requerimientos TEXT
 );
 
 -- 2. Tabla: participantes
@@ -23,7 +24,7 @@ CREATE TABLE public.registros (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     participante_id UUID NOT NULL REFERENCES public.participantes(id) ON DELETE CASCADE,
     taller_id UUID NOT NULL REFERENCES public.talleres(id) ON DELETE CASCADE,
-    numero_consecutivo INTEGER NOT NULL CHECK (numero_consecutivo BETWEEN 1 AND 25),
+    numero_consecutivo INTEGER NOT NULL,
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT now(),
     UNIQUE(participante_id, taller_id)
 );
@@ -137,8 +138,10 @@ BEGIN
         'viernes_consecutivo', v_consecutivo_viernes,
         'tallerista_jueves', v_taller_jueves.tallerista,
         'tematica_jueves', v_taller_jueves.nombre_tematica,
+        'requerimientos_jueves', v_taller_jueves.requerimientos,
         'tallerista_viernes', v_taller_viernes.tallerista,
-        'tematica_viernes', v_taller_viernes.nombre_tematica
+        'tematica_viernes', v_taller_viernes.nombre_tematica,
+        'requerimientos_viernes', v_taller_viernes.requerimientos
     );
 
 EXCEPTION

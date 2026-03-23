@@ -92,8 +92,9 @@ BEGIN
         RAISE EXCEPTION 'Fechas seleccionadas no coinciden con los días esperados.';
     END IF;
 
-    -- Validar que no sea la misma temática ambos días
-    IF v_taller_jueves.nombre_tematica = v_taller_viernes.nombre_tematica THEN
+    -- Validar que no sea la misma temática ambos días (ignorando mayúsculas, signos de puntuación y espacios)
+    IF regexp_replace(lower(v_taller_jueves.nombre_tematica), '[^a-záéíóúüñ0-9]', '', 'g') = 
+       regexp_replace(lower(v_taller_viernes.nombre_tematica), '[^a-záéíóúüñ0-9]', '', 'g') THEN
         RAISE EXCEPTION 'No se puede seleccionar la misma temática para ambos días. Debe seleccionar un taller diferente para cada uno de los 2 días.';
     END IF;
 

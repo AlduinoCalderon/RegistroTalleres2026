@@ -16,14 +16,14 @@ export default function RegistrationForm() {
   const [talleresJueves, setTalleresJueves] = useState<Taller[]>([]);
   const [talleresViernes, setTalleresViernes] = useState<Taller[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [nombre, setNombre] = useState('');
   const [escuela, setEscuela] = useState('');
   const [cct, setCct] = useState('');
   const [telefono, setTelefono] = useState('');
   const [tallerJuevesId, setTallerJuevesId] = useState('');
   const [tallerViernesId, setTallerViernesId] = useState('');
-  
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successData, setSuccessData] = useState<any>(null);
@@ -64,7 +64,10 @@ export default function RegistrationForm() {
     if (tallerJuevesId && tallerViernesId) {
       const tJ = talleresJueves.find(t => t.id === tallerJuevesId);
       const tV = talleresViernes.find(t => t.id === tallerViernesId);
-      if (tJ?.nombre_tematica === tV?.nombre_tematica) {
+      
+      const normalizeStr = (str: string) => str.toLowerCase().replace(/[^a-záéíóúüñ0-9]/g, '');
+      
+      if (normalizeStr(tJ?.nombre_tematica || 'j') === normalizeStr(tV?.nombre_tematica || 'v')) {
         setError('Debes seleccionar un taller diferente para cada uno de los 2 días.');
         return;
       }
@@ -107,14 +110,14 @@ export default function RegistrationForm() {
           <h2 className="text-4xl font-extrabold mb-2 tracking-tight">¡Registro Exitoso!</h2>
           <div className="mt-6 bg-red-600 border-4 border-yellow-300 p-4 rounded-xl shadow-2xl animate-pulse">
             <p className="text-white text-xl md:text-2xl font-black uppercase tracking-wider text-shadow-md">
-              ¡DETERNERSE! TOMA UNA CAPTURA DE PANTALLA
+              ¡DETERNERSE! Te recomendamos tomar una captura de pantalla de esta página.
             </p>
             <p className="text-yellow-100 mt-2 font-bold text-lg">
               Guarda este folio en tu celular para el día del evento.
             </p>
           </div>
         </div>
-        
+
         <div className="p-8">
           <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
             <div className="bg-indigo-100 p-3 rounded-full text-indigo-700">
@@ -133,10 +136,10 @@ export default function RegistrationForm() {
                 <div className="pr-4">
                   <h3 className="text-lg font-bold text-gray-800 mb-1 leading-tight">{successData.tematica_jueves}</h3>
                   <p className="text-blue-700 font-medium mb-4">Imparte: {successData.tallerista_jueves}</p>
-                  
+
                   {successData.requerimientos_jueves && (
                     <div className="bg-white/80 p-3 rounded-lg border border-blue-200 mb-4 text-sm text-gray-700">
-                      <strong className="text-blue-800 block mb-1">Requerimientos:</strong> 
+                      <strong className="text-blue-800 block mb-1">Requerimientos:</strong>
                       {successData.requerimientos_jueves}
                     </div>
                   )}
@@ -149,7 +152,7 @@ export default function RegistrationForm() {
                 </div>
               </div>
             )}
-            
+
             {successData.viernes_consecutivo && (
               <div className="bg-purple-50/50 border border-purple-100 rounded-xl p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">VIERNES</div>
@@ -159,7 +162,7 @@ export default function RegistrationForm() {
 
                   {successData.requerimientos_viernes && (
                     <div className="bg-white/80 p-3 rounded-lg border border-purple-200 mb-4 text-sm text-gray-700">
-                      <strong className="text-purple-800 block mb-1">Requerimientos:</strong> 
+                      <strong className="text-purple-800 block mb-1">Requerimientos:</strong>
                       {successData.requerimientos_viernes}
                     </div>
                   )}
@@ -173,8 +176,8 @@ export default function RegistrationForm() {
               </div>
             )}
           </div>
-          
-          <button 
+
+          <button
             onClick={() => {
               setSuccessData(null);
               setNombre(''); setEscuela(''); setCct(''); setTelefono('');
@@ -195,7 +198,7 @@ export default function RegistrationForm() {
         <h2 className="text-3xl font-extrabold tracking-tight">Inscripción a Talleres</h2>
         <p className="text-blue-100 mt-2 text-lg">Completa tus datos y selecciona un taller diferente para cada día.</p>
       </div>
-      
+
       <form onSubmit={handleSubmit} className="p-8 space-y-8">
         {error && (
           <div className="bg-red-50 text-red-700 p-4 rounded-xl flex items-start gap-3 border border-red-200 shadow-sm animate-in fade-in slide-in-from-top-2">
@@ -206,24 +209,24 @@ export default function RegistrationForm() {
 
         <div className="space-y-5">
           <h3 className="text-xl font-bold text-gray-800 border-b pb-2">Datos Personales</h3>
-          
+
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-2">
               <User className="w-4 h-4 text-blue-600" /> Nombre Completo del Docente
             </label>
-            <input 
+            <input
               type="text" required value={nombre} onChange={e => setNombre(e.target.value)}
               className="w-full border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-3 bg-gray-50 focus:bg-white transition-colors"
               placeholder="Ej. Juan Pérez García"
             />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-2">
                 <School className="w-4 h-4 text-blue-600" /> Escuela de Procedencia
               </label>
-              <input 
+              <input
                 type="text" required value={escuela} onChange={e => setEscuela(e.target.value)}
                 className="w-full border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-3 bg-gray-50 focus:bg-white transition-colors"
                 placeholder="Ej. Esc. Prim. Morelos"
@@ -233,7 +236,7 @@ export default function RegistrationForm() {
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-2">
                 <Hash className="w-4 h-4 text-blue-600" /> Clave CT (CCT)
               </label>
-              <input 
+              <input
                 type="text" required value={cct} onChange={e => setCct(e.target.value)}
                 className="w-full border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-3 bg-gray-50 focus:bg-white transition-colors"
                 placeholder="Ej. 09DPR1234X"
@@ -243,7 +246,7 @@ export default function RegistrationForm() {
               <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-2">
                 <Phone className="w-4 h-4 text-blue-600" /> Teléfono (10 dígitos)
               </label>
-              <input 
+              <input
                 type="tel" required value={telefono} onChange={e => setTelefono(e.target.value.replace(/\D/g, ''))}
                 maxLength={10} minLength={10}
                 className="w-full border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-3 bg-gray-50 focus:bg-white transition-colors"
@@ -256,10 +259,10 @@ export default function RegistrationForm() {
 
         <div className="space-y-5 pt-2">
           <h3 className="text-xl font-bold text-gray-800 border-b pb-2">Selección de Talleres</h3>
-          
+
           {loading ? (
             <div className="flex flex-col items-center justify-center p-12 text-gray-500 bg-gray-50 rounded-2xl border border-gray-100">
-              <Loader2 className="animate-spin w-8 h-8 mb-3 text-blue-500" /> 
+              <Loader2 className="animate-spin w-8 h-8 mb-3 text-blue-500" />
               <span className="font-medium text-sm">Cargando catálogo de talleres...</span>
             </div>
           ) : (
@@ -267,7 +270,7 @@ export default function RegistrationForm() {
               <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 shadow-sm relative">
                 <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-2xl">OBLIGATORIO</div>
                 <label className="block text-sm font-bold text-blue-900 mb-3">Taller para el día JUEVES</label>
-                <select 
+                <select
                   value={tallerJuevesId} onChange={e => setTallerJuevesId(e.target.value)} required
                   className="w-full border-blue-200 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-3.5 bg-white font-medium text-gray-700 cursor-pointer"
                 >
@@ -291,7 +294,7 @@ export default function RegistrationForm() {
               <div className="bg-purple-50/50 p-5 rounded-2xl border border-purple-100 shadow-sm relative">
                 <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-2xl">OBLIGATORIO</div>
                 <label className="block text-sm font-bold text-purple-900 mb-3">Taller para el día VIERNES</label>
-                <select 
+                <select
                   value={tallerViernesId} onChange={e => setTallerViernesId(e.target.value)} required
                   className="w-full border-purple-200 rounded-xl shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-3.5 bg-white font-medium text-gray-700 cursor-pointer"
                 >
@@ -320,12 +323,12 @@ export default function RegistrationForm() {
         </div>
 
         <div className="pt-2">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={submitting || loading || !tallerJuevesId || !tallerViernesId}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-4 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
           >
-            {submitting ? <><Loader2 className="animate-spin w-6 h-6"/> Procesando Registro Seguro...</> : 'Confirmar e Inscribirse'}
+            {submitting ? <><Loader2 className="animate-spin w-6 h-6" /> Procesando Registro Seguro...</> : 'Confirmar e Inscribirse'}
           </button>
         </div>
       </form>

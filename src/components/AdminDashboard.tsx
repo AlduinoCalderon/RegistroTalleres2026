@@ -44,7 +44,7 @@ export default function AdminDashboard() {
       .select('*')
       .order('dia', { ascending: true })
       .order('nombre_tematica', { ascending: true });
-    
+
     if (data) setTalleres(data);
     setLoading(false);
   };
@@ -89,21 +89,22 @@ export default function AdminDashboard() {
       doc.text('Imparte:', margin, row1Y);
       doc.setFont('helvetica', 'normal');
       doc.text(taller.tallerista, margin + 22, row1Y);
-
+      // --- Row 2: Fecha del taller ---
       doc.setFont('helvetica', 'bold');
-      doc.text(fecha, pageWidth - margin, row1Y, { align: 'right' });
-
-      // --- Row 2: Nombre del taller (wrapped) ---
       const row2Y = row1Y + 8;
+      doc.text(fecha, pageWidth - margin, row2Y, { align: 'left' });
+
+      // --- Row 3: Nombre del taller (wrapped) ---
+      const row3Y = row1Y + 8;
       const maxNombreWidth = pageWidth - margin * 2;
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
-      doc.text('Taller:', margin, row2Y);
+      doc.text('Taller:', margin, row3Y);
       doc.setFont('helvetica', 'normal');
       const tallerLabel = 'Taller:  ';
       const labelWidth = doc.getTextWidth(tallerLabel);
       const nombreLines = doc.splitTextToSize(taller.nombre_tematica, maxNombreWidth - labelWidth);
-      doc.text(nombreLines, margin + labelWidth, row2Y);
+      doc.text(nombreLines, margin + labelWidth, row3Y);
 
       // Calculate tableStartY based on how many lines the name took
       const lineHeight = 6;
@@ -145,7 +146,7 @@ export default function AdminDashboard() {
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9]/gi, '_');
       doc.save(`Asistencia_${taller.dia}_${normalizedName}.pdf`);
-      
+
     } catch (err) {
       console.error(err);
       alert('Hubo un error al generar el PDF. Revisa la consola para más detalles.');
@@ -169,7 +170,7 @@ export default function AdminDashboard() {
           <h2 className="text-3xl font-bold text-gray-800">Panel de Administración</h2>
           <p className="text-gray-500">Gestión de talleres e impresión de listas.</p>
         </div>
-        <button 
+        <button
           onClick={handleLogout}
           className="flex items-center gap-2 bg-red-100 text-red-700 hover:bg-red-200 py-2 px-4 rounded-lg font-medium transition"
         >
@@ -189,24 +190,24 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {talleres.map(t => (
           <div key={t.id} className="bg-white border text-gray-800 border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition-shadow p-6 flex flex-col h-full relative overflow-hidden">
-             {t.dia === 'Jueves' ? (
-                <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">JUEVES</div>
-             ) : (
-                <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">VIERNES</div>
-             )}
-            
+            {t.dia === 'Jueves' ? (
+              <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">JUEVES</div>
+            ) : (
+              <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">VIERNES</div>
+            )}
+
             <div className="flex justify-between items-start mb-4 mt-2">
               <span className="flex items-center text-sm text-gray-700 font-bold bg-gray-100 px-3 py-1 rounded-full">
                 <Users className="w-4 h-4 mr-2 text-blue-600" /> {t.lugares_ocupados}/{t.capacidad_maxima} lugares
               </span>
             </div>
-            
+
             <h3 className="text-xl font-bold mb-1 leading-tight">{t.nombre_tematica}</h3>
             <p className="text-sm font-medium text-gray-500 mb-4 flex-1">Imparte: {t.tallerista}</p>
 
             <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-              <div 
-                className={`h-2.5 rounded-full ${t.dia === 'Jueves' ? 'bg-blue-600' : 'bg-purple-600'}`} 
+              <div
+                className={`h-2.5 rounded-full ${t.dia === 'Jueves' ? 'bg-blue-600' : 'bg-purple-600'}`}
                 style={{ width: `${(t.lugares_ocupados / t.capacidad_maxima) * 100}%` }}
               ></div>
             </div>

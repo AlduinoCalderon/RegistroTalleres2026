@@ -79,36 +79,47 @@ export default function AdminDashboard() {
       const pageWidth = doc.internal.pageSize.getWidth();
       const margin = 14;
 
-      // Header
+      // Header data
       const fecha = taller.dia === 'Jueves' ? 'Jueves 26 de marzo de 2026' : 'Viernes 27 de marzo de 2026';
 
-      // --- Row 1: Imparte (left) | Fecha (right) ---
-      const row1Y = 15;
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Imparte:', margin, row1Y);
-      doc.setFont('helvetica', 'normal');
-      doc.text(taller.tallerista, margin + 22, row1Y);
-      // --- Row 2: Fecha del taller ---
-      doc.setFont('helvetica', 'bold');
-      const row2Y = row1Y + 8;
-      doc.text(fecha, margin, row2Y, { align: 'left' });
-
-      // --- Row 3: Nombre del taller (wrapped) ---
-      const row3Y = row2Y + 8;
+      // Helper: calculate wrapped lines for the workshop name (needed for startY and didDrawPage)
       const maxNombreWidth = pageWidth - margin * 2;
       doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Taller:', margin, row3Y);
       doc.setFont('helvetica', 'normal');
       const tallerLabel = 'Taller:  ';
       const labelWidth = doc.getTextWidth(tallerLabel);
       const nombreLines = doc.splitTextToSize(taller.nombre_tematica, maxNombreWidth - labelWidth);
-      doc.text(nombreLines, margin + labelWidth, row3Y);
-
-      // Calculate tableStartY based on how many lines the name took
       const lineHeight = 6;
-      const tableStartY = row2Y + (nombreLines.length - 1) * lineHeight + 10;
+
+      // Helper function: draws the full header on any page
+      const drawHeader = () => {
+        // Row 1: Imparte (left) | (right blank — fecha moved to row 2)
+        const r1 = 15;
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Imparte:', margin, r1);
+        doc.setFont('helvetica', 'normal');
+        doc.text(taller.tallerista, margin + 22, r1);
+
+        // Row 2: Fecha
+        const r2 = r1 + 8;
+        doc.setFont('helvetica', 'bold');
+        doc.text(fecha, margin, r2);
+
+        // Row 3: Taller (wrapped)
+        const r3 = r2 + 8;
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Taller:', margin, r3);
+        doc.setFont('helvetica', 'normal');
+        doc.text(nombreLines, margin + labelWidth, r3);
+      };
+
+      // Draw header on page 1
+      drawHeader();
+
+      // Calculate where the table starts (after the header)
+      const tableStartY = 15 + 8 + 8 + (nombreLines.length - 1) * lineHeight + 10;
 
       // Table data
       const tableData = registros.map((reg) => [
@@ -137,7 +148,13 @@ export default function AdminDashboard() {
           3: { cellWidth: 28 },
           4: { cellWidth: 35 }
         },
-        styles: { fontSize: 9, cellPadding: 2, minCellHeight: 9, valign: 'middle' }
+        styles: { fontSize: 9, cellPadding: 2, minCellHeight: 9, valign: 'middle' },
+        // Redraw the header on every new page so it never gets cut off
+        didDrawPage: () => {
+          drawHeader();
+        },
+        // Reserve space for the header on pages 2, 3, …
+        margin: { top: tableStartY }
       });
 
       // Normalize filename: remove diacritics, then replace non-alphanumeric with underscore

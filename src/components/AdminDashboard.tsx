@@ -92,7 +92,7 @@ export default function AdminDashboard() {
       // --- Row 2: Fecha del taller ---
       doc.setFont('helvetica', 'bold');
       const row2Y = row1Y + 8;
-      doc.text(fecha, pageWidth - margin, row2Y, { align: 'left' });
+      doc.text(fecha, margin, row2Y, { align: 'left' });
 
       // --- Row 3: Nombre del taller (wrapped) ---
       const row3Y = row2Y + 8;

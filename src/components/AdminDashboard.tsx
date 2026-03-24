@@ -95,7 +95,7 @@ export default function AdminDashboard() {
       doc.text(fecha, pageWidth - margin, row2Y, { align: 'left' });
 
       // --- Row 3: Nombre del taller (wrapped) ---
-      const row3Y = row1Y + 8;
+      const row3Y = row2Y + 8;
       const maxNombreWidth = pageWidth - margin * 2;
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');

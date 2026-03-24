@@ -76,27 +76,38 @@ export default function AdminDashboard() {
       const registros = data as unknown as Registro[];
 
       const doc = new jsPDF();
-      
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 14;
+
       // Header
       const fecha = taller.dia === 'Jueves' ? 'Jueves 26 de marzo de 2026' : 'Viernes 27 de marzo de 2026';
-      
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`Taller:`, 14, 15);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`${taller.nombre_tematica}`, 28, 15);
-      
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`Imparte:`, 14, 21);
-      doc.setFont('helvetica', 'normal');
-      // Replace fallback pending with distinct color check or normal layout
-      doc.text(`${taller.tallerista}`, 32, 21);
 
-      // Fecha a la derecha
+      // --- Row 1: Imparte (left) | Fecha (right) ---
+      const row1Y = 15;
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Imparte:', margin, row1Y);
+      doc.setFont('helvetica', 'normal');
+      doc.text(taller.tallerista, margin + 22, row1Y);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text(fecha, pageWidth - margin, row1Y, { align: 'right' });
+
+      // --- Row 2: Nombre del taller (wrapped) ---
+      const row2Y = row1Y + 8;
+      const maxNombreWidth = pageWidth - margin * 2;
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Fecha: ${fecha}`, 196, 15, { align: 'right' });
+      doc.text('Taller:', margin, row2Y);
+      doc.setFont('helvetica', 'normal');
+      const tallerLabel = 'Taller:  ';
+      const labelWidth = doc.getTextWidth(tallerLabel);
+      const nombreLines = doc.splitTextToSize(taller.nombre_tematica, maxNombreWidth - labelWidth);
+      doc.text(nombreLines, margin + labelWidth, row2Y);
+
+      // Calculate tableStartY based on how many lines the name took
+      const lineHeight = 6;
+      const tableStartY = row2Y + (nombreLines.length - 1) * lineHeight + 10;
 
       // Table data
       const tableData = registros.map((reg) => [
@@ -107,17 +118,17 @@ export default function AdminDashboard() {
         '' // Empty space for signature
       ]);
 
-      // Add empty rows if not full (optional, but good for printable lists)
+      // Add empty rows if not full
       for (let i = registros.length + 1; i <= taller.capacidad_maxima; i++) {
         tableData.push([i.toString(), '', '', '', '']);
       }
 
       autoTable(doc, {
-        startY: 28,
+        startY: tableStartY,
         head: [['N°', 'Nombre del Maestro', 'Escuela', 'CCT', 'Firma']],
         body: tableData,
         theme: 'grid',
-        headStyles: { fillColor: [30, 58, 138] }, // text-blue-900 equivalent
+        headStyles: { fillColor: [30, 58, 138] },
         columnStyles: {
           0: { cellWidth: 12, halign: 'center' },
           1: { cellWidth: 65 },
@@ -128,7 +139,12 @@ export default function AdminDashboard() {
         styles: { fontSize: 9, cellPadding: 2, minCellHeight: 9, valign: 'middle' }
       });
 
-      doc.save(`Asistencia_${taller.dia}_${taller.nombre_tematica.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+      // Normalize filename: remove diacritics, then replace non-alphanumeric with underscore
+      const normalizedName = taller.nombre_tematica
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/gi, '_');
+      doc.save(`Asistencia_${taller.dia}_${normalizedName}.pdf`);
       
     } catch (err) {
       console.error(err);

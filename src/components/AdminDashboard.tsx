@@ -78,48 +78,54 @@ export default function AdminDashboard() {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       const margin = 14;
+      const contentWidth = pageWidth - margin * 2;
+      const lineHeight = 5; // compact line spacing
 
       // Header data
       const fecha = taller.dia === 'Jueves' ? 'Jueves 26 de marzo de 2026' : 'Viernes 27 de marzo de 2026';
 
-      // Helper: calculate wrapped lines for the workshop name (needed for startY and didDrawPage)
-      const maxNombreWidth = pageWidth - margin * 2;
-      doc.setFontSize(12);
+      // Pre-calculate wrapped lines at font size 10 (used inside drawHeader)
+      doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      const tallerLabel = 'Taller:  ';
-      const labelWidth = doc.getTextWidth(tallerLabel);
-      const nombreLines = doc.splitTextToSize(taller.nombre_tematica, maxNombreWidth - labelWidth);
-      const lineHeight = 6;
+      const tallerLabelW = doc.getTextWidth('Taller:   ');
+      const imparteLabelW = doc.getTextWidth('Imparte:  ');
+      const nombreLines = doc.splitTextToSize(taller.nombre_tematica, contentWidth - tallerLabelW);
+      const imparteLines = doc.splitTextToSize(taller.tallerista, contentWidth - imparteLabelW);
 
       // Helper function: draws the full header on any page
       const drawHeader = () => {
-        // Row 1: Imparte (left) | (right blank — fecha moved to row 2)
-        const r1 = 15;
-        doc.setFontSize(11);
+        // ── Fecha: sola, arriba a la derecha (fuente pequeña, muy compacta) ──
+        const fechaY = 7;
+        doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
-        doc.text('Imparte:', margin, r1);
-        doc.setFont('helvetica', 'normal');
-        doc.text(taller.tallerista, margin + 22, r1);
+        doc.text(fecha, pageWidth - margin, fechaY, { align: 'right' });
 
-        // Row 2: Fecha
-        const r2 = r1 + 8;
+        // ── Taller: nombre con wrap, debajo de la fecha ──
+        const tallerY = fechaY + 6;
+        doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
-        doc.text(fecha, margin, r2);
-
-        // Row 3: Taller (wrapped)
-        const r3 = r2 + 8;
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Taller:', margin, r3);
+        doc.text('Taller:', margin, tallerY);
         doc.setFont('helvetica', 'normal');
-        doc.text(nombreLines, margin + labelWidth, r3);
+        doc.text(nombreLines, margin + tallerLabelW, tallerY);
+
+        // ── Imparte: debajo del nombre (también con wrap) ──
+        const imparteY = tallerY + (nombreLines.length - 1) * lineHeight + 6;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Imparte:', margin, imparteY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(imparteLines, margin + imparteLabelW, imparteY);
       };
 
       // Draw header on page 1
       drawHeader();
 
-      // Calculate where the table starts (after the header)
-      const tableStartY = 15 + 8 + 8 + (nombreLines.length - 1) * lineHeight + 10;
+      // Dynamic tableStartY: fecha(7) + gap(6) + taller lines + gap(6) + imparte lines + gap(5)
+      const tableStartY =
+        7 + 6 +
+        (nombreLines.length - 1) * lineHeight +
+        6 +
+        (imparteLines.length - 1) * lineHeight +
+        6 + 5;
 
       // Table data
       const tableData = registros.map((reg) => [
@@ -127,7 +133,7 @@ export default function AdminDashboard() {
         reg.participantes.nombre_maestro,
         reg.participantes.escuela,
         reg.participantes.cct,
-        '' // Empty space for signature
+        '' // space for signature
       ]);
 
       // Add empty rows if not full
@@ -148,12 +154,12 @@ export default function AdminDashboard() {
           3: { cellWidth: 28 },
           4: { cellWidth: 35 }
         },
-        styles: { fontSize: 9, cellPadding: 2, minCellHeight: 9, valign: 'middle' },
-        // Redraw the header on every new page so it never gets cut off
+        styles: { fontSize: 9, cellPadding: 1.5, minCellHeight: 8, valign: 'middle' },
+        // Redraw header on every new page
         didDrawPage: () => {
           drawHeader();
         },
-        // Reserve space for the header on pages 2, 3, …
+        // Reserve header space on pages 2, 3, …
         margin: { top: tableStartY }
       });
 
